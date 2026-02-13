@@ -84,6 +84,7 @@ export const Login: React.FC = () => {
         </p>
       )}
 
+      {/* Uncomment when GitHub OAuth is enabled in Supabase:
       <div style={{ position: 'relative', margin: '2rem 0', textAlign: 'center' }}>
         <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '1px', background: 'rgba(255,255,255,0.1)' }} />
         <span style={{ position: 'relative', padding: '0 1rem', background: 'var(--card-bg)', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>OR</span>
@@ -96,6 +97,7 @@ export const Login: React.FC = () => {
       >
         <Github size={20} /> Continue with GitHub
       </button>
+      */}
     </div>
   );
 };
