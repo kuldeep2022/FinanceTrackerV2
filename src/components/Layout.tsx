@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, ArrowLeftRight, CreditCard, Plus, User, Cloud } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, CreditCard, Plus, User, Cloud, BarChart3 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface LayoutProps {
@@ -78,6 +78,12 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
           onClick={() => setActiveTab('transactions')} 
           icon={<ArrowLeftRight size={24} />} 
           label="Activity" 
+        />
+        <NavButton 
+          active={activeTab === 'analytics'} 
+          onClick={() => setActiveTab('analytics')} 
+          icon={<BarChart3 size={24} />} 
+          label="Analytics" 
         />
         <NavButton 
           active={activeTab === 'debts'} 

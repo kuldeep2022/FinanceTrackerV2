@@ -5,6 +5,7 @@ import { Transactions } from './components/Transactions'
 import { Debts } from './components/Debts'
 import { AddTransaction } from './components/AddTransaction'
 import { Login } from './components/Login'
+import { Charts } from './components/Charts'
 import { useFinanceData } from './hooks/useFinanceData'
 import './index.css'
 
@@ -41,6 +42,8 @@ function App() {
         return <Dashboard stats={stats} transactions={transactions} />
       case 'transactions':
         return <Transactions transactions={transactions} />
+      case 'analytics':
+        return <Charts transactions={transactions} />
       case 'debts':
         return <Debts debts={debts} onPay={payDebt} />
       case 'profile':
