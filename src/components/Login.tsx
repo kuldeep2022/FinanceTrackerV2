@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Mail, LogIn } from 'lucide-react';
-// import { Github } from 'lucide-react'; // Uncomment when enabling GitHub OAuth
+import { Mail, Github, LogIn } from 'lucide-react';
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -85,7 +84,6 @@ export const Login: React.FC = () => {
         </p>
       )}
 
-      {/* Uncomment when GitHub OAuth is enabled in Supabase:
       <div style={{ position: 'relative', margin: '2rem 0', textAlign: 'center' }}>
         <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '1px', background: 'rgba(255,255,255,0.1)' }} />
         <span style={{ position: 'relative', padding: '0 1rem', background: 'var(--card-bg)', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>OR</span>
@@ -94,11 +92,15 @@ export const Login: React.FC = () => {
       <button 
         className="btn btn-secondary" 
         style={{ width: '100%', padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.8rem' }}
-        onClick={() => supabase.auth.signInWithOAuth({ provider: 'github' })}
+        onClick={() => supabase.auth.signInWithOAuth({ 
+          provider: 'github',
+          options: {
+            redirectTo: window.location.origin
+          }
+        })}
       >
         <Github size={20} /> Continue with GitHub
       </button>
-      */}
     </div>
   );
 };
