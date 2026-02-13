@@ -1,73 +1,68 @@
-# React + TypeScript + Vite
+# 🌊 Flux Finance
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<p align="center">
+  <strong>The premium, cross-platform finance tracker for the modern era.</strong><br>
+  Built with React + Vite + Supabase for a seamless, real-time wealth tracking experience.
+</p>
 
-Currently, two official plugins are available:
+<p align="center">
+  <a href="https://flux-finance-zeta.vercel.app"><strong>View Live Demo</strong></a>
+</p>
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## ✨ Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **💎 Glassmorphic Dashboard**: A high-end visual overview of your net worth, income, and expenses.
+- **⚡ Real-time Sync**: Your data is synchronized across all devices (Desktop, Mobile, Tablet) instantly via Supabase.
+- **🛡️ Secure & Private**: Strict Row Level Security (RLS) ensures only you can access your financial data.
+- **💳 Debt Master**: Advanced tracking for debts with visual progress bars and repayment history.
+- **📱 PWA Powered**: Install Flux Finance on any device as a native app with full offline support.
+- **🌑 Sleek Dark Theme**: Optimized for readability and reduced eye strain with custom-curated indigos and grays.
 
-## Expanding the ESLint configuration
+## 🛠️ Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Frontend**: React 19, TypeScript, Vite
+- **Animations**: Framer Motion
+- **Icons**: Lucide React
+- **Backend**: Supabase (PostgreSQL, Real-time Engine, Auth)
+- **Deployment**: Vercel
+- **PWA**: `vite-plugin-pwa`
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🚀 Getting Started
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Prerequisites
+- Node.js (v18+)
+- A Supabase Project (see [Supabase Setup Guide](.system/supabase_setup.md))
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/kuldeep2022/FinanceTrackerV2.git
+   cd FinanceTrackerV2
+   ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+3. Configure Environment Variables:
+   Create a `.env` file based on `.env.example` and add your Supabase credentials.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+## 📱 PWA Support
+Flux Finance is a fully compatible **Progressive Web App**. To install:
+- **Desktop**: Click the install icon in the browser address bar.
+- **iOS**: Tap "Share" and then "Add to Home Screen".
+- **Android**: Tap the menu icon and then "Install App".
+
+---
+
+<p align="center">
+  Built with ❤️ for financial freedom.
+</p>
