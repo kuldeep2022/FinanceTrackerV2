@@ -120,19 +120,31 @@ export function useFinanceData() {
   }, [debts]);
 
   const addTransaction = async (t: Omit<Transaction, 'id'>) => {
-    const newTransaction = { ...t, user_id: user?.id };
+    const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const newTransaction = { ...t, id: tempId, user_id: user?.id };
     
-    // Optimistic local update (will be confirmed by real-time sync if cloud is active)
-    if (!user) {
-      const tempId = Math.random().toString(36).substr(2, 9);
-      setTransactions(prev => [{ ...newTransaction, id: tempId } as Transaction, ...prev]);
-    }
+    // Optimistic update - immediately show in UI
+    setTransactions(prev => [newTransaction as Transaction, ...prev]);
 
     if (user) {
-      const { error } = await supabase.from('transactions').insert([newTransaction]);
+      // Sync to cloud
+      const { data, error } = await supabase
+        .from('transactions')
+        .insert([{ ...t, user_id: user.id }])
+        .select()
+        .single();
+      
       if (error) {
-        alert('Cloud sync failed: ' + error.message);
+        // Rollback on error
+        setTransactions(prev => prev.filter(tr => tr.id !== tempId));
+        alert('Failed to save transaction: ' + error.message);
         console.error('Error syncing transaction:', error);
+        return;
+      }
+      
+      // Replace temp ID with real ID from database
+      if (data) {
+        setTransactions(prev => prev.map(tr => tr.id === tempId ? data as Transaction : tr));
       }
     }
 
@@ -148,16 +160,28 @@ export function useFinanceData() {
   };
 
   const addDebt = async (d: Omit<Debt, 'id'>) => {
-    const newDebt = { ...d, user_id: user?.id };
+    const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const newDebt = { ...d, id: tempId, user_id: user?.id };
     
-    if (!user) {
-      const tempId = Math.random().toString(36).substr(2, 9);
-      setDebts(prev => [{ ...newDebt, id: tempId } as Debt, ...prev]);
-    }
+    // Optimistic update
+    setDebts(prev => [newDebt as Debt, ...prev]);
 
     if (user) {
-      const { error } = await supabase.from('debts').insert([newDebt]);
-      if (error) console.error('Error syncing debt:', error);
+      const { data, error } = await supabase
+        .from('debts')
+        .insert([{ ...d, user_id: user.id }])
+        .select()
+        .single();
+      
+      if (error) {
+        setDebts(prev => prev.filter(debt => debt.id !== tempId));
+        console.error('Error syncing debt:', error);
+        return;
+      }
+      
+      if (data) {
+        setDebts(prev => prev.map(debt => debt.id === tempId ? data as Debt : debt));
+      }
     }
   };
 
@@ -167,14 +191,21 @@ export function useFinanceData() {
 
     const updatedPaid = debt.paid + amount;
 
-    if (!user) {
-      setDebts(prev => prev.map(d => d.id === debtId ? { ...d, paid: updatedPaid } : d));
-    } else {
+    // Optimistic update
+    setDebts(prev => prev.map(d => d.id === debtId ? { ...d, paid: updatedPaid } : d));
+
+    if (user) {
        const { error } = await supabase
         .from('debts')
         .update({ paid: updatedPaid })
         .eq('id', debtId);
-      if (error) alert('Update failed: ' + error.message);
+      
+      if (error) {
+        // Rollback on error
+        setDebts(prev => prev.map(d => d.id === debtId ? { ...d, paid: debt.paid } : d));
+        alert('Update failed: ' + error.message);
+        return;
+      }
     }
     
     addTransaction({
