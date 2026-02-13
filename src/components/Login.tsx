@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Mail, Github, LogIn } from 'lucide-react';
+import { Mail, LogIn } from 'lucide-react';
+// import { Github } from 'lucide-react'; // Uncomment when enabling GitHub OAuth
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
