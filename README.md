@@ -61,6 +61,19 @@ Flux Finance is a fully compatible **Progressive Web App**. To install:
 - **iOS**: Tap "Share" and then "Add to Home Screen".
 - **Android**: Tap the menu icon and then "Install App".
 
+## 🚀 Deployment & Automation
+
+Flux Finance is configured for automatic deployments via GitHub and Vercel. To deploy new changes instantly, use the included automation script:
+
+```bash
+npm run ship "your commit message"
+```
+
+This single command will:
+1. Stage all your changes.
+2. Commit them with your provided message.
+3. Push them to GitHub, which triggers an automatic build and deploy on **Vercel**.
+
 ---
 
 <p align="center">
