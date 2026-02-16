@@ -67,7 +67,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, transactions }) => 
         </div>
       </motion.div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
         <StatCard 
           label="Income" 
           value={`$${stats.income.toLocaleString()}`} 

@@ -121,14 +121,14 @@ export const CSVImport: React.FC<CSVImportProps> = ({ onImport, existingTransact
   };
 
   return (
-    <div style={{ padding: '1.5rem', maxWidth: '1000px', margin: '0 auto' }}>
-      <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+    <div style={{ padding: '1rem', maxWidth: '1000px', margin: '0 auto' }}>
+      <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(99, 102, 241, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-primary)' }}>
-          <FileText size={24} />
+          <FileText size={20} />
         </div>
         <div>
-          <h2 style={{ margin: 0 }}>Statement Import</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Smart import for bank and credit card CSVs</p>
+          <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Statement Import</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Smart import for bank CSVs</p>
         </div>
       </div>
 
@@ -140,7 +140,7 @@ export const CSVImport: React.FC<CSVImportProps> = ({ onImport, existingTransact
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             className="glass-card"
-            style={{ padding: '4rem 2rem', textAlign: 'center', border: '2px dashed rgba(255,255,255,0.1)' }}
+            style={{ padding: '3rem 1.5rem', textAlign: 'center', border: '2px dashed rgba(255,255,255,0.1)' }}
           >
             <input 
               type="file" 
@@ -149,9 +149,9 @@ export const CSVImport: React.FC<CSVImportProps> = ({ onImport, existingTransact
               style={{ display: 'none' }} 
               ref={fileInputRef} 
             />
-            <Upload size={48} style={{ margin: '0 auto 1.5rem', opacity: 0.3 }} />
-            <h3>Drop your CSV statement here</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Supports most bank formats including Chase, Amex, and Capital One</p>
+            <Upload size={40} style={{ margin: '0 auto 1rem', opacity: 0.3 }} />
+            <h3 style={{ fontSize: '1.2rem' }}>Drop your CSV statement</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>Supports Chase, Amex, and Capital One</p>
             <button className="btn btn-primary" onClick={() => fileInputRef.current?.click()}>
               Choose File
             </button>
@@ -170,11 +170,12 @@ export const CSVImport: React.FC<CSVImportProps> = ({ onImport, existingTransact
               <Settings2 size={20} />
               Map CSV Columns
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+            <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
               {(Object.keys(mapping) as Array<keyof Mapping>).map(key => (
-                <div key={key} className="input-group">
+                <div key={key} className="input-group" style={{ marginBottom: 0 }}>
                   <label style={{ textTransform: 'capitalize' }}>{key} Column</label>
                   <select 
+                    style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--card-border)', color: 'white' }}
                     value={mapping[key]} 
                     onChange={e => setMapping(prev => ({ ...prev, [key]: e.target.value }))}
                   >
@@ -184,10 +185,10 @@ export const CSVImport: React.FC<CSVImportProps> = ({ onImport, existingTransact
                 </div>
               ))}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: '0.75rem' }}>
               <button className="btn btn-secondary" onClick={() => setStep('upload')}>Back</button>
-              <button className="btn btn-primary" onClick={handleProcessMapping}>
-                Next: Review Transactions <ArrowRight size={18} />
+              <button className="btn btn-primary" style={{ flex: 1, minWidth: '200px' }} onClick={handleProcessMapping}>
+                Review Transactions <ArrowRight size={18} />
               </button>
             </div>
           </motion.div>
@@ -199,16 +200,17 @@ export const CSVImport: React.FC<CSVImportProps> = ({ onImport, existingTransact
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h3>Review {pendingTransactions.length} Items</h3>
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <button className="btn btn-secondary" onClick={() => setStep('map')}>Back</button>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.1rem' }}>Review {pendingTransactions.length} Items</h3>
+              <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+                <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setStep('map')}>Back</button>
                 <button 
                   className="btn btn-primary" 
+                  style={{ flex: 2 }}
                   disabled={isImporting || !pendingTransactions.some(t => t.selected)}
                   onClick={handleImport}
                 >
-                  {isImporting ? 'Importing...' : `Import ${pendingTransactions.filter(t => t.selected).length} Items`}
+                  {isImporting ? 'Importing...' : `Import ${pendingTransactions.filter(t => t.selected).length}`}
                 </button>
               </div>
             </div>

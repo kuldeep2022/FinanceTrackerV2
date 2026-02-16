@@ -41,7 +41,8 @@ h4 {
   max-width: 500px;
   margin: 0 auto;
   padding: 1.5rem;
-  padding-bottom: 5rem;
+  padding-bottom: 7rem;
+  /* Space for fixed nav */
   min-height: 100vh;
 }
 
@@ -148,7 +149,6 @@ h4 {
   color: var(--accent-secondary);
 }
 
-/* Loading Spinner */
 .spinner {
   width: 40px;
   height: 40px;
@@ -165,8 +165,26 @@ h4 {
   }
 }
 
+/* Responsive Utilities */
 @media (max-width: 600px) {
   .app-container {
-    padding: 1rem 1.5rem;
+    padding: 1rem 1rem 7rem 1rem;
   }
+
+  .responsive-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .glass-card {
+    padding: 1.2rem;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

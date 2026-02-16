@@ -48,25 +48,31 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
         </AnimatePresence>
       </main>
 
-      <nav style={{
-        position: 'fixed',
-        bottom: '1.5rem',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: 'calc(100% - 3rem)',
-        maxWidth: '400px',
-        height: '70px',
-        background: 'rgba(23, 27, 41, 0.8)',
-        backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        borderRadius: '24px',
-        display: 'flex',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        padding: '0 1rem',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
-        zIndex: 1000
-      }}>
+      <nav 
+        className="no-scrollbar"
+        style={{
+          position: 'fixed',
+          bottom: '1rem',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '90%',
+          maxWidth: '450px',
+          height: '70px',
+          background: 'rgba(23, 27, 41, 0.8)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '24px',
+          display: 'flex',
+          justifyContent: 'space-around',
+          alignItems: 'center',
+          padding: '0 1rem',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+          zIndex: 1000,
+          overflowX: 'auto',
+          scrollSnapType: 'x mandatory',
+          gap: '8px'
+        }}
+      >
         <NavButton 
           active={activeTab === 'dashboard'} 
           onClick={() => setActiveTab('dashboard')} 

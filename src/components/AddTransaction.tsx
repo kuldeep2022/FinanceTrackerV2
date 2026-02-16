@@ -75,7 +75,7 @@ export const AddTransaction: React.FC<AddTransactionProps> = ({ isOpen, onClose,
               borderTop: '1px solid var(--card-border)',
               borderTopLeftRadius: '32px',
               borderTopRightRadius: '32px',
-              padding: '2rem',
+              padding: '1.5rem',
               zIndex: 1200,
               maxHeight: '90vh',
               overflowY: 'auto'

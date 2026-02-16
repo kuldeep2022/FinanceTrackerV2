@@ -25,14 +25,14 @@ export const Charts: React.FC<ChartsProps> = ({ transactions }) => {
   }
 
   return (
-    <div style={{ padding: '1.5rem', maxWidth: '1400px', margin: '0 auto' }}>
-      <h2 style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+    <div style={{ padding: '1rem', maxWidth: '1400px', margin: '0 auto' }}>
+      <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         <Activity size={28} />
         Financial Analytics
       </h2>
 
       {/* Monthly Income vs Expenses */}
-      <div className="card" style={{ marginBottom: '2rem', padding: '1.5rem' }}>
+      <div className="card" style={{ marginBottom: '1.5rem', padding: '1.2rem' }}>
         <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <BarChart3 size={20} />
           Income vs Expenses (Last 6 Months)
@@ -44,10 +44,12 @@ export const Charts: React.FC<ChartsProps> = ({ transactions }) => {
               dataKey="month" 
               tickFormatter={formatMonth}
               stroke="var(--text-secondary)"
+              fontSize={11}
             />
             <YAxis 
               tickFormatter={(value) => `$${value}`}
               stroke="var(--text-secondary)"
+              fontSize={11}
             />
             <Tooltip 
               formatter={(value: any) => formatCurrency(Number(value))}
@@ -65,7 +67,7 @@ export const Charts: React.FC<ChartsProps> = ({ transactions }) => {
         </ResponsiveContainer>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
         {/* Balance Over Time */}
         <div className="card" style={{ padding: '1.5rem' }}>
           <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
