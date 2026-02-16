@@ -34,6 +34,25 @@ export interface RecurringTransaction {
   user_id?: string;
 }
 
+export interface Budget {
+  id: string;
+  category: string;
+  amount: number;
+  period: string;
+  user_id?: string;
+}
+
+export interface SavingsGoal {
+  id: string;
+  title: string;
+  target_amount: number;
+  current_amount: number;
+  deadline?: string;
+  color: string;
+  icon: string;
+  user_id?: string;
+}
+
 export function useFinanceData() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -49,6 +68,16 @@ export function useFinanceData() {
 
   const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>(() => {
     const saved = localStorage.getItem('flux_recurring');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [budgets, setBudgets] = useState<Budget[]>(() => {
+    const saved = localStorage.getItem('flux_budgets');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>(() => {
+    const saved = localStorage.getItem('flux_savings');
     return saved ? JSON.parse(saved) : [];
   });
 
@@ -89,13 +118,25 @@ export function useFinanceData() {
         .from('recurring_transactions')
         .select('*');
 
+      const { data: cloudBudgets, error: bError } = await supabase
+        .from('budgets')
+        .select('*');
+
+      const { data: cloudSavings, error: sError } = await supabase
+        .from('savings_goals')
+        .select('*');
+
       if (tError) console.error('Error fetching transactions:', tError);
       if (dError) console.error('Error fetching debts:', dError);
       if (rError) console.error('Error fetching recurring:', rError);
+      if (bError) console.error('Error fetching budgets:', bError);
+      if (sError) console.error('Error fetching savings goals:', sError);
 
       if (cloudTransactions) setTransactions(cloudTransactions);
       if (cloudDebts) setDebts(cloudDebts);
       if (cloudRecurring) setRecurringTransactions(cloudRecurring);
+      if (cloudBudgets) setBudgets(cloudBudgets);
+      if (cloudSavings) setSavingsGoals(cloudSavings);
       setLoading(false);
     };
 
@@ -141,10 +182,38 @@ export function useFinanceData() {
       })
       .subscribe();
 
+    const budgetSubscription = supabase
+      .channel('public:budgets')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'budgets', filter: `user_id=eq.${user.id}` }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setBudgets(prev => [payload.new as Budget, ...prev]);
+        } else if (payload.eventType === 'UPDATE') {
+          setBudgets(prev => prev.map(b => b.id === payload.new.id ? payload.new as Budget : b));
+        } else if (payload.eventType === 'DELETE') {
+          setBudgets(prev => prev.filter(b => b.id !== payload.old.id));
+        }
+      })
+      .subscribe();
+
+    const savingsSubscription = supabase
+      .channel('public:savings_goals')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'savings_goals', filter: `user_id=eq.${user.id}` }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setSavingsGoals(prev => [payload.new as SavingsGoal, ...prev]);
+        } else if (payload.eventType === 'UPDATE') {
+          setSavingsGoals(prev => prev.map(s => s.id === payload.new.id ? payload.new as SavingsGoal : s));
+        } else if (payload.eventType === 'DELETE') {
+          setSavingsGoals(prev => prev.filter(s => s.id !== payload.old.id));
+        }
+      })
+      .subscribe();
+
     return () => {
       transactionSubscription.unsubscribe();
       debtSubscription.unsubscribe();
       recurringSubscription.unsubscribe();
+      budgetSubscription.unsubscribe();
+      savingsSubscription.unsubscribe();
     };
   }, [user]);
 
@@ -160,6 +229,14 @@ export function useFinanceData() {
   useEffect(() => {
     localStorage.setItem('flux_recurring', JSON.stringify(recurringTransactions));
   }, [recurringTransactions]);
+
+  useEffect(() => {
+    localStorage.setItem('flux_budgets', JSON.stringify(budgets));
+  }, [budgets]);
+
+  useEffect(() => {
+    localStorage.setItem('flux_savings', JSON.stringify(savingsGoals));
+  }, [savingsGoals]);
 
   const addTransaction = async (t: Omit<Transaction, 'id'>) => {
     const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -381,10 +458,46 @@ export function useFinanceData() {
     totalDebt: debts.reduce((acc, d) => acc + (d.total - d.paid), 0)
   };
 
+  const updateBudget = async (category: string, amount: number) => {
+    const existing = budgets.find(b => b.category === category);
+    
+    if (user) {
+      if (existing) {
+        await supabase.from('budgets').update({ amount }).eq('id', existing.id);
+      } else {
+        await supabase.from('budgets').insert([{ category, amount, user_id: user.id, period: 'monthly' }]);
+      }
+    } else {
+      if (existing) {
+        setBudgets(prev => prev.map(b => b.category === category ? { ...b, amount } : b));
+      } else {
+        setBudgets(prev => [...prev, { id: Date.now().toString(), category, amount, period: 'monthly' }]);
+      }
+    }
+  };
+
+  const updateSavingsGoal = async (id: string, updates: Partial<SavingsGoal>) => {
+    if (user) {
+      await supabase.from('savings_goals').update(updates).eq('id', id);
+    } else {
+      setSavingsGoals(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+    }
+  };
+
+  const addSavingsGoal = async (goal: Omit<SavingsGoal, 'id' | 'current_amount'>) => {
+    if (user) {
+      await supabase.from('savings_goals').insert([{ ...goal, user_id: user.id, current_amount: 0 }]);
+    } else {
+      setSavingsGoals(prev => [...prev, { ...goal, id: Date.now().toString(), current_amount: 0 }]);
+    }
+  };
+
   return { 
     transactions, 
     debts, 
     recurringTransactions,
+    budgets,
+    savingsGoals,
     addTransaction, 
     bulkAddTransactions,
     addDebt, 
@@ -392,6 +505,9 @@ export function useFinanceData() {
     addRecurring,
     toggleRecurring,
     deleteRecurring,
+    updateBudget,
+    addSavingsGoal,
+    updateSavingsGoal,
     stats, 
     user, 
     loading 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, ArrowLeftRight, CreditCard, Plus, User, Cloud, BarChart3, Clock, Upload } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, CreditCard, Plus, User, Cloud, BarChart3, Clock, Upload, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface LayoutProps {
@@ -102,6 +102,12 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
           onClick={() => setActiveTab('import')} 
           icon={<Upload size={24} />} 
           label="Import" 
+        />
+        <NavButton 
+          active={activeTab === 'planning'} 
+          onClick={() => setActiveTab('planning')} 
+          icon={<Target size={24} />} 
+          label="Planning" 
         />
         <NavButton 
           active={activeTab === 'debts'} 

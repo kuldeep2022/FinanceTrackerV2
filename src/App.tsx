@@ -9,6 +9,8 @@ import { Charts } from './components/Charts'
 import { RecurringTransactions } from './components/RecurringTransactions'
 import { CSVImport } from './components/CSVImport'
 import { WhatsNewModal } from './components/WhatsNewModal'
+import { CategoryBudgets } from './components/CategoryBudgets'
+import { SavingsGoals } from './components/SavingsGoals'
 import { CURRENT_VERSION } from './data/whatsNewData'
 import { useFinanceData } from './hooks/useFinanceData'
 import './index.css'
@@ -31,12 +33,17 @@ function App() {
     transactions, 
     debts, 
     recurringTransactions,
+    budgets,
+    savingsGoals,
     addTransaction, 
     bulkAddTransactions,
     payDebt, 
     addRecurring,
     toggleRecurring,
     deleteRecurring,
+    updateBudget,
+    addSavingsGoal,
+    updateSavingsGoal,
     stats, 
     user, 
     loading 
@@ -87,6 +94,21 @@ function App() {
             onImport={bulkAddTransactions} 
             existingTransactions={transactions} 
           />
+        )
+      case 'planning':
+        return (
+          <div style={{ display: 'grid', gap: '2rem' }}>
+            <CategoryBudgets 
+              transactions={transactions}
+              budgets={budgets}
+              onUpdateBudget={updateBudget}
+            />
+            <SavingsGoals 
+              goals={savingsGoals}
+              onAddGoal={addSavingsGoal}
+              onUpdateGoal={updateSavingsGoal}
+            />
+          </div>
         )
       case 'debts':
         return <Debts debts={debts} onPay={payDebt} />
