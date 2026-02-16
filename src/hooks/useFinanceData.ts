@@ -201,6 +201,40 @@ export function useFinanceData() {
     }
   };
 
+  const bulkAddTransactions = async (newTransactions: Omit<Transaction, 'id'>[]) => {
+    const tempTransactions = newTransactions.map(t => ({
+      ...t,
+      id: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      user_id: user?.id
+    }));
+
+    // Optimistic update
+    setTransactions(prev => [...tempTransactions as Transaction[], ...prev]);
+
+    if (user) {
+      const { data, error } = await supabase
+        .from('transactions')
+        .insert(newTransactions.map(t => ({ ...t, user_id: user.id })))
+        .select();
+
+      if (error) {
+        // Rollback
+        const tempIds = tempTransactions.map(t => t.id);
+        setTransactions(prev => prev.filter(t => !tempIds.includes(t.id)));
+        alert('Bulk import failed: ' + error.message);
+        return;
+      }
+
+      if (data) {
+        const tempIds = tempTransactions.map(t => t.id);
+        setTransactions(prev => [
+          ...data as Transaction[],
+          ...prev.filter(t => !tempIds.includes(t.id))
+        ]);
+      }
+    }
+  };
+
   const addRecurring = async (r: Omit<RecurringTransaction, 'id' | 'next_occurrence' | 'is_active'>) => {
     const next_occurrence = r.start_date;
     const newRecurring = { ...r, next_occurrence, is_active: true, user_id: user?.id };
@@ -352,6 +386,7 @@ export function useFinanceData() {
     debts, 
     recurringTransactions,
     addTransaction, 
+    bulkAddTransactions,
     addDebt, 
     payDebt, 
     addRecurring,

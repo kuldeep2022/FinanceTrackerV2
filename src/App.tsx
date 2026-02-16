@@ -7,6 +7,7 @@ import { AddTransaction } from './components/AddTransaction'
 import { Login } from './components/Login'
 import { Charts } from './components/Charts'
 import { RecurringTransactions } from './components/RecurringTransactions'
+import { CSVImport } from './components/CSVImport'
 import { useFinanceData } from './hooks/useFinanceData'
 import './index.css'
 
@@ -18,6 +19,7 @@ function App() {
     debts, 
     recurringTransactions,
     addTransaction, 
+    bulkAddTransactions,
     payDebt, 
     addRecurring,
     toggleRecurring,
@@ -64,6 +66,13 @@ function App() {
             onAdd={addRecurring}
             onToggle={toggleRecurring}
             onDelete={deleteRecurring}
+          />
+        )
+      case 'import':
+        return (
+          <CSVImport 
+            onImport={bulkAddTransactions} 
+            existingTransactions={transactions} 
           />
         )
       case 'debts':
