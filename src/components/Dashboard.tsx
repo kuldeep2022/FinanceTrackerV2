@@ -1,5 +1,6 @@
-import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { calculateFinancialHealth } from '../utils/financialHealth';
 import type { Transaction } from '../hooks/useFinanceData';
 
 interface DashboardProps {
@@ -13,25 +14,56 @@ interface DashboardProps {
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ stats, transactions }) => {
+  const health = calculateFinancialHealth(stats.income, stats.expenses, stats.totalDebt, stats.balance);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <motion.div 
         className="glass-card"
         style={{ 
           background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))',
-          padding: '2rem',
+          padding: '2.5rem 2rem',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '0.5rem',
-          textAlign: 'center'
+          gap: '0.75rem',
+          textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden'
         }}
       >
-        <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 500 }}>Total Balance</span>
-        <h2 style={{ fontSize: '2.5rem', fontWeight: 700 }}>${stats.balance.toLocaleString()}</h2>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', color: 'var(--success)', fontSize: '0.9rem', background: 'rgba(34, 197, 94, 0.1)', padding: '0.4rem 0.8rem', borderRadius: '99px' }}>
-          <TrendingUp size={16} />
-          <span>Financial Health: Stable</span>
+        <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 500, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Total Balance</span>
+        <h2 style={{ fontSize: '3rem', fontWeight: 800, margin: '0.5rem 0' }}>${stats.balance.toLocaleString()}</h2>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ 
+            display: 'flex', 
+            gap: '0.5rem', 
+            alignItems: 'center', 
+            color: 'white', 
+            fontSize: '0.85rem', 
+            fontWeight: 600,
+            background: health.color, 
+            padding: '0.5rem 1rem', 
+            borderRadius: '99px',
+            boxShadow: `0 4px 12px ${health.color}40`
+          }}>
+            <TrendingUp size={16} />
+            <span>Financial Health: {health.status}</span>
+          </div>
+          
+          <p style={{ 
+            fontSize: '0.9rem', 
+            color: 'var(--text-secondary)', 
+            maxWidth: '280px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            justifyContent: 'center'
+          }}>
+            <Info size={14} style={{ opacity: 0.7 }} />
+            {health.insight}
+          </p>
         </div>
       </motion.div>
 
