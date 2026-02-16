@@ -8,12 +8,25 @@ import { Login } from './components/Login'
 import { Charts } from './components/Charts'
 import { RecurringTransactions } from './components/RecurringTransactions'
 import { CSVImport } from './components/CSVImport'
+import { WhatsNewModal } from './components/WhatsNewModal'
+import { CURRENT_VERSION } from './data/whatsNewData'
 import { useFinanceData } from './hooks/useFinanceData'
 import './index.css'
+import { useEffect } from 'react'
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [isAddOpen, setIsAddOpen] = useState(false)
+  const [isWhatsNewOpen, setIsWhatsNewOpen] = useState(false)
+
+  useEffect(() => {
+    const lastSeenVersion = localStorage.getItem('flux_whats_new_version');
+    if (lastSeenVersion !== CURRENT_VERSION) {
+      // Delay slightly for a smoother entry after load
+      const timer = setTimeout(() => setIsWhatsNewOpen(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
   const { 
     transactions, 
     debts, 
@@ -128,6 +141,10 @@ function App() {
         isOpen={isAddOpen} 
         onClose={() => setIsAddOpen(false)} 
         onAdd={addTransaction}
+      />
+      <WhatsNewModal 
+        isOpen={isWhatsNewOpen} 
+        onClose={() => setIsWhatsNewOpen(false)} 
       />
     </>
   )
