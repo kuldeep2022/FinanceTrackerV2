@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Target, AlertTriangle, Edit2 } from 'lucide-react';
 import type { Transaction, Budget } from '../hooks/useFinanceData';
+import { calculateCategorySpending } from '../utils/financeCalculations';
 
 interface CategoryBudgetsProps {
   transactions: Transaction[];
@@ -19,13 +20,8 @@ export const CategoryBudgets: React.FC<CategoryBudgetsProps> = ({
 
   const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
   
-  // Calculate spending per category for current month
-  const categorySpending = transactions
-    .filter(t => t.type === 'expense' && t.date.startsWith(currentMonth))
-    .reduce((acc, t) => {
-      acc[t.category] = (acc[t.category] || 0) + Math.abs(t.amount);
-      return acc;
-    }, {} as Record<string, number>);
+  // Calculate spending per category for current month using utility
+  const categorySpending = calculateCategorySpending(transactions, currentMonth);
 
   // Consolidate budgets and actual spending
   const budgetStatus = budgets.map(b => {

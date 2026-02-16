@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { calculateStats } from '../utils/financeCalculations';
 
 export interface Transaction {
   id: string;
@@ -451,12 +452,7 @@ export function useFinanceData() {
     });
   };
 
-  const stats = {
-    balance: transactions.reduce((acc, t) => acc + t.amount, 0),
-    income: transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0),
-    expenses: Math.abs(transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0)),
-    totalDebt: debts.reduce((acc, d) => acc + (d.total - d.paid), 0)
-  };
+  const stats = calculateStats(transactions, debts);
 
   const updateBudget = async (category: string, amount: number) => {
     const existing = budgets.find(b => b.category === category);
@@ -478,17 +474,26 @@ export function useFinanceData() {
 
   const updateSavingsGoal = async (id: string, updates: Partial<SavingsGoal>) => {
     if (user) {
-      await supabase.from('savings_goals').update(updates).eq('id', id);
+      const { error } = await supabase
+        .from('savings_goals')
+        .update(updates)
+        .eq('id', id);
+
+      if (error) console.error('Error updating goal:', error);
     } else {
-      setSavingsGoals(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+      setSavingsGoals((prev: SavingsGoal[]) => prev.map((s: SavingsGoal) => s.id === id ? { ...s, ...updates } : s));
     }
   };
 
   const addSavingsGoal = async (goal: Omit<SavingsGoal, 'id' | 'current_amount'>) => {
     if (user) {
-      await supabase.from('savings_goals').insert([{ ...goal, user_id: user.id, current_amount: 0 }]);
+      const { error } = await supabase
+        .from('savings_goals')
+        .insert([{ ...goal, user_id: user.id, current_amount: 0 }]);
+
+      if (error) console.error('Error adding goal:', error);
     } else {
-      setSavingsGoals(prev => [...prev, { ...goal, id: Date.now().toString(), current_amount: 0 }]);
+      setSavingsGoals((prev: SavingsGoal[]) => [...prev, { ...goal, id: Date.now().toString(), current_amount: 0 } as SavingsGoal]);
     }
   };
 

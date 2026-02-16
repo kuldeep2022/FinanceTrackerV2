@@ -12,6 +12,23 @@ fi
 
 echo "🚀 Starting deployment flow..."
 
+# 0. Build & Test Check (Critical to prevent broken deployments)
+echo "🔍 Running type check..."
+npm run typecheck
+if [ $? -ne 0 ]; then
+    echo "❌ Error: Type check failed. Fix errors before shipping."
+    exit 1
+fi
+echo "✅ Type check passed!"
+
+echo "🧪 Running automated tests..."
+npm test
+if [ $? -ne 0 ]; then
+    echo "❌ Error: Tests failed. Fix logic before shipping."
+    exit 1
+fi
+echo "✅ Tests passed!"
+
 # 1. Add changes
 echo "📦 Staging changes..."
 git add .
