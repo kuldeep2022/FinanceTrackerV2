@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flag, Plus, Trash2, Calendar, Target, ChevronRight } from 'lucide-react';
+import { Flag, Plus, Calendar, Target } from 'lucide-react';
 import type { SavingsGoal } from '../hooks/useFinanceData';
 
 interface SavingsGoalsProps {
   goals: SavingsGoal[];
   onAddGoal: (goal: Omit<SavingsGoal, 'id' | 'current_amount'>) => void;
-  onUpdateGoal: (id: string, updates: Partial<SavingsGoal>) => void;
 }
 
 export const SavingsGoals: React.FC<SavingsGoalsProps> = ({ 
   goals, 
-  onAddGoal, 
-  onUpdateGoal 
+  onAddGoal 
 }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [newGoal, setNewGoal] = useState({

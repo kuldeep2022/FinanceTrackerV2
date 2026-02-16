@@ -106,7 +106,6 @@ function App() {
             <SavingsGoals 
               goals={savingsGoals}
               onAddGoal={addSavingsGoal}
-              onUpdateGoal={updateSavingsGoal}
             />
           </div>
         )
