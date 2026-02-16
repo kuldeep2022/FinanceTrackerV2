@@ -43,7 +43,6 @@ function App() {
     deleteRecurring,
     updateBudget,
     addSavingsGoal,
-    updateSavingsGoal,
     stats, 
     user, 
     loading 
