@@ -11,9 +11,10 @@ interface DashboardProps {
     totalDebt: number;
   };
   transactions: Transaction[];
+  onSeeAll: () => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ stats, transactions }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ stats, transactions, onSeeAll }) => {
   const health = calculateFinancialHealth(stats.income, stats.expenses, stats.totalDebt, stats.balance);
 
   return (
@@ -85,7 +86,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, transactions }) => 
       <section>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h3 style={{ fontSize: '1.2rem' }}>Recent Activity</h3>
-          <button style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.9rem', fontWeight: 600 }}>See all</button>
+          <button 
+            onClick={onSeeAll}
+            style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}
+          >
+            See all
+          </button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {transactions.slice(0, 3).map(t => (

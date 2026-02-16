@@ -41,6 +41,8 @@ function App() {
     addRecurring,
     toggleRecurring,
     deleteRecurring,
+    deleteTransaction,
+    clearAllData,
     updateBudget,
     addSavingsGoal,
     stats, 
@@ -73,9 +75,15 @@ function App() {
 
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard stats={stats} transactions={transactions} />
+        return <Dashboard stats={stats} transactions={transactions} onSeeAll={() => setActiveTab('transactions')} />
       case 'transactions':
-        return <Transactions transactions={transactions} />
+        return (
+          <Transactions 
+            transactions={transactions} 
+            onDelete={deleteTransaction} 
+            onClearAll={clearAllData}
+          />
+        )
       case 'analytics':
         return <Charts transactions={transactions} />
       case 'scheduled':
@@ -143,7 +151,7 @@ function App() {
           </div>
         )
       default:
-        return <Dashboard stats={stats} transactions={transactions} />
+        return <Dashboard stats={stats} transactions={transactions} onSeeAll={() => setActiveTab('transactions')} />
     }
   }
 

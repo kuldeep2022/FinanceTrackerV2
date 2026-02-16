@@ -1,13 +1,28 @@
-import { Search, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { Search, ArrowUpRight, ArrowDownLeft, Trash2 } from 'lucide-react';
 import type { Transaction } from '../hooks/useFinanceData';
 
 interface TransactionsProps {
   transactions: Transaction[];
+  onDelete: (id: string) => void;
+  onClearAll: () => void;
 }
 
-export const Transactions: React.FC<TransactionsProps> = ({ transactions }) => {
+export const Transactions: React.FC<TransactionsProps> = ({ transactions, onDelete, onClearAll }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Transactions</h2>
+        {transactions.length > 0 && (
+          <button 
+            className="btn btn-danger" 
+            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', border: '1px solid rgba(239, 68, 68, 0.2)' }}
+            onClick={onClearAll}
+          >
+            Clear All
+          </button>
+        )}
+      </div>
+
       <div className="input-group" style={{ position: 'relative', marginBottom: 0 }}>
         <Search style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} size={20} />
         <input 
@@ -46,9 +61,34 @@ export const Transactions: React.FC<TransactionsProps> = ({ transactions }) => {
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{t.category} • {t.date}</span>
                 </div>
               </div>
-              <span style={{ fontWeight: 700, color: t.amount > 0 ? 'var(--success)' : 'var(--danger)' }}>
-                {t.amount > 0 ? '+' : ''}{t.amount.toLocaleString()}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <span style={{ fontWeight: 700, color: t.amount > 0 ? 'var(--success)' : 'var(--danger)' }}>
+                  {t.amount > 0 ? '+' : ''}{t.amount.toLocaleString()}
+                </span>
+                <button 
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to delete this transaction?')) {
+                      onDelete(t.id);
+                    }
+                  }}
+                  style={{ 
+                    background: 'none', 
+                    border: 'none', 
+                    color: 'var(--text-secondary)', 
+                    cursor: 'pointer',
+                    padding: '8px',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'var(--transition)'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--danger)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
             </div>
           ))}
           {transactions.length === 0 && <p style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '2rem' }}>No transactions yet</p>}

@@ -21,13 +21,21 @@ if [ $? -ne 0 ]; then
 fi
 echo "✅ Type check passed!"
 
-echo "🧪 Running automated tests..."
+echo "🧪 Running unit tests..."
 npm test
 if [ $? -ne 0 ]; then
-    echo "❌ Error: Tests failed. Fix logic before shipping."
+    echo "❌ Error: Unit tests failed. Fix logic before shipping."
     exit 1
 fi
-echo "✅ Tests passed!"
+echo "✅ Unit tests passed!"
+
+echo "🎭 Running E2E tests..."
+npm run test:e2e
+if [ $? -ne 0 ]; then
+    echo "❌ Error: E2E tests failed. Fix UI flows before shipping."
+    exit 1
+fi
+echo "✅ E2E tests passed!"
 
 # 1. Add changes
 echo "📦 Staging changes..."

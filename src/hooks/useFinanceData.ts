@@ -452,6 +452,27 @@ export function useFinanceData() {
     });
   };
 
+  const deleteTransaction = async (id: string) => {
+    // Optimistic update
+    const deletedTx = transactions.find(t => t.id === id);
+    setTransactions(prev => prev.filter(t => t.id !== id));
+
+    if (user && !id.startsWith('temp_')) {
+      const { error } = await supabase
+        .from('transactions')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        // Rollback on error
+        if (deletedTx) {
+          setTransactions(prev => [deletedTx, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+        }
+        console.error('Error deleting transaction:', error);
+      }
+    }
+  };
+
   const stats = calculateStats(transactions, debts);
 
   const updateBudget = async (category: string, amount: number) => {
@@ -497,6 +518,50 @@ export function useFinanceData() {
     }
   };
 
+  const clearAllData = async () => {
+    if (window.confirm('CRITICAL: This will permanently delete ALL your financial data (transactions, debts, budgets, goals). Are you absolutely sure?')) {
+      if (user) {
+        setLoading(true);
+        try {
+          // Promise.all to delete from all tables
+          await Promise.all([
+            supabase.from('transactions').delete().eq('user_id', user.id),
+            supabase.from('debts').delete().eq('user_id', user.id),
+            supabase.from('recurring_transactions').delete().eq('user_id', user.id),
+            supabase.from('budgets').delete().eq('user_id', user.id),
+            supabase.from('savings_goals').delete().eq('user_id', user.id)
+          ]);
+          
+          // Clear local state
+          setTransactions([]);
+          setDebts([]);
+          setRecurringTransactions([]);
+          setBudgets([]);
+          setSavingsGoals([]);
+        } catch (error) {
+          console.error('Error clearing data:', error);
+          alert('Failed to clear some data. Please check your connection.');
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        // Local mode
+        setTransactions([]);
+        setDebts([]);
+        setRecurringTransactions([]);
+        setBudgets([]);
+        setSavingsGoals([]);
+        
+        // Clear local storage
+        localStorage.removeItem('flux_transactions');
+        localStorage.removeItem('flux_debts');
+        localStorage.removeItem('flux_recurring');
+        localStorage.removeItem('flux_budgets');
+        localStorage.removeItem('flux_savings');
+      }
+    }
+  };
+
   return { 
     transactions, 
     debts, 
@@ -505,6 +570,8 @@ export function useFinanceData() {
     savingsGoals,
     addTransaction, 
     bulkAddTransactions,
+    deleteTransaction,
+    clearAllData,
     addDebt, 
     payDebt, 
     addRecurring,

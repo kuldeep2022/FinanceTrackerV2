@@ -37,8 +37,16 @@ export const CategoryBudgets: React.FC<CategoryBudgetsProps> = ({
 
   const handleSaveEdit = () => {
     if (editingCategory) {
-      onUpdateBudget(editingCategory, parseFloat(editValue) || 0);
+      let category = editingCategory;
+      let amount = parseFloat(editValue.split('|')[0]) || 0;
+      
+      if (category.startsWith('New Category')) {
+        category = category.includes('|') ? category.split('|')[1] : 'General';
+      }
+      
+      onUpdateBudget(category, amount);
       setEditingCategory(null);
+      setEditValue('');
     }
   };
 
@@ -49,6 +57,16 @@ export const CategoryBudgets: React.FC<CategoryBudgetsProps> = ({
           <Target size={20} color="var(--accent-primary)" />
           Monthly Budgets
         </h3>
+        <button 
+          className="btn btn-secondary" 
+          style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}
+          onClick={() => {
+            setEditingCategory('New Category');
+            setEditValue('0');
+          }}
+        >
+          Add Budget
+        </button>
       </div>
 
       <div style={{ display: 'grid', gap: '1.25rem' }}>
@@ -131,13 +149,35 @@ export const CategoryBudgets: React.FC<CategoryBudgetsProps> = ({
                 boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)'
               }}
             >
-              <h3 style={{ marginBottom: '1.5rem' }}>Update {editingCategory} Budget</h3>
+              <h3 style={{ marginBottom: '1.5rem' }}>{editingCategory === 'New Category' ? 'Add Budget' : `Update ${editingCategory} Budget`}</h3>
+              
+              {editingCategory === 'New Category' && (
+                <div className="input-group">
+                  <label>Category</label>
+                  <select 
+                    className="input-field" 
+                    value={editValue.split('|')[1] || 'General'}
+                    onChange={(e) => setEditingCategory('New Category|' + e.target.value)}
+                    style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}
+                  >
+                    <option value="General">General</option>
+                    <option value="Food & Dining">Food & Dining</option>
+                    <option value="Transport">Transport</option>
+                    <option value="Shopping">Shopping</option>
+                    <option value="Utilities">Utilities</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Health">Health</option>
+                    <option value="Housing">Housing</option>
+                  </select>
+                </div>
+              )}
+
               <div className="input-group">
                 <label>Monthly Limit ($)</label>
                 <input 
                   type="number" 
                   className="input-field" 
-                  value={editValue}
+                  value={editValue.split('|')[0]}
                   onChange={(e) => setEditValue(e.target.value)}
                   autoFocus
                 />

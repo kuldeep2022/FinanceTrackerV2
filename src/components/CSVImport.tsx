@@ -23,6 +23,7 @@ export const CSVImport: React.FC<CSVImportProps> = ({ onImport, existingTransact
   const [mapping, setMapping] = useState<Mapping>({ date: '', title: '', amount: '' });
   const [pendingTransactions, setPendingTransactions] = useState<any[]>([]);
   const [isImporting, setIsImporting] = useState(false);
+  const [flipSigns, setFlipSigns] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,8 +60,15 @@ export const CSVImport: React.FC<CSVImportProps> = ({ onImport, existingTransact
 
     const processed = csvData.map(row => {
       const title = row[mapping.title] || 'Untitled';
-      const amountStr = String(row[mapping.amount]).replace(/[$,]/g, '');
-      const amount = parseFloat(amountStr);
+      let amountStr = String(row[mapping.amount]).replace(/[$,]/g, '').trim();
+      
+      // Handle parenthetical negatives like (15.00)
+      if (amountStr.startsWith('(') && amountStr.endsWith(')')) {
+        amountStr = '-' + amountStr.substring(1, amountStr.length - 1);
+      }
+      
+      let amount = parseFloat(amountStr);
+      if (flipSigns) amount = -amount;
       const dateRaw = row[mapping.date];
       
       // Basic date cleaning
@@ -185,6 +193,23 @@ export const CSVImport: React.FC<CSVImportProps> = ({ onImport, existingTransact
                 </div>
               ))}
             </div>
+            <div style={{ padding: '1rem', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--card-border)', marginBottom: '2rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                <input 
+                  type="checkbox" 
+                  checked={flipSigns} 
+                  onChange={e => setFlipSigns(e.target.checked)}
+                  style={{ width: '20px', height: '20px' }}
+                />
+                <div>
+                  <span style={{ display: 'block', fontWeight: 600 }}>Flip Transaction Signs</span>
+                  <span style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    Use this if expenses are shown as positive and income as negative (common for Credit Cards)
+                  </span>
+                </div>
+              </label>
+            </div>
+
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: '0.75rem' }}>
               <button className="btn btn-secondary" onClick={() => setStep('upload')}>Back</button>
               <button className="btn btn-primary" style={{ flex: 1, minWidth: '200px' }} onClick={handleProcessMapping}>
