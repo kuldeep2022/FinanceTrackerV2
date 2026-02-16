@@ -6,13 +6,26 @@ import { Debts } from './components/Debts'
 import { AddTransaction } from './components/AddTransaction'
 import { Login } from './components/Login'
 import { Charts } from './components/Charts'
+import { RecurringTransactions } from './components/RecurringTransactions'
 import { useFinanceData } from './hooks/useFinanceData'
 import './index.css'
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [isAddOpen, setIsAddOpen] = useState(false)
-  const { transactions, debts, addTransaction, payDebt, stats, user, loading } = useFinanceData()
+  const { 
+    transactions, 
+    debts, 
+    recurringTransactions,
+    addTransaction, 
+    payDebt, 
+    addRecurring,
+    toggleRecurring,
+    deleteRecurring,
+    stats, 
+    user, 
+    loading 
+  } = useFinanceData()
 
   if (loading) {
     return (
@@ -44,6 +57,15 @@ function App() {
         return <Transactions transactions={transactions} />
       case 'analytics':
         return <Charts transactions={transactions} />
+      case 'scheduled':
+        return (
+          <RecurringTransactions 
+            recurringItems={recurringTransactions}
+            onAdd={addRecurring}
+            onToggle={toggleRecurring}
+            onDelete={deleteRecurring}
+          />
+        )
       case 'debts':
         return <Debts debts={debts} onPay={payDebt} />
       case 'profile':
