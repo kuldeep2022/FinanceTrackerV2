@@ -164,7 +164,7 @@ export const Charts: React.FC<ChartsProps> = ({ transactions }) => {
               stroke="var(--text-secondary)"
             />
             <Tooltip 
-              formatter={(value: number) => formatCurrency(value)}
+              formatter={(value: any) => formatCurrency(Number(value))}
               contentStyle={{ 
                   background: 'var(--card-bg)', 
                 border: '1px solid rgba(255,255,255,0.1)',
