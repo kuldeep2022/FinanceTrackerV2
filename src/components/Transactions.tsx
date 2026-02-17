@@ -1,4 +1,5 @@
-import { Search, ArrowUpRight, ArrowDownLeft, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { Search, ArrowUpRight, ArrowDownLeft, Trash2, X } from 'lucide-react';
 import type { Transaction } from '../hooks/useFinanceData';
 
 interface TransactionsProps {
@@ -8,6 +9,7 @@ interface TransactionsProps {
 }
 
 export const Transactions: React.FC<TransactionsProps> = ({ transactions, onDelete, onClearAll }) => {
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -65,29 +67,42 @@ export const Transactions: React.FC<TransactionsProps> = ({ transactions, onDele
                 <span style={{ fontWeight: 700, color: t.amount > 0 ? 'var(--success)' : 'var(--danger)' }}>
                   {t.amount > 0 ? '+' : ''}{t.amount.toLocaleString()}
                 </span>
-                <button 
-                  onClick={() => {
-                    if (window.confirm('Are you sure you want to delete this transaction?')) {
-                      onDelete(t.id);
-                    }
-                  }}
-                  style={{ 
-                    background: 'none', 
-                    border: 'none', 
-                    color: 'var(--text-secondary)', 
-                    cursor: 'pointer',
-                    padding: '8px',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'var(--transition)'
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--danger)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
-                >
-                  <Trash2 size={18} />
-                </button>
+                {deletingId === t.id ? (
+                  <div style={{ display: 'flex', gap: '0.4rem' }}>
+                    <button 
+                      onClick={() => { onDelete(t.id); setDeletingId(null); }}
+                      style={{ background: 'var(--danger)', border: 'none', color: 'white', borderRadius: '8px', padding: '6px 12px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      Delete
+                    </button>
+                    <button 
+                      onClick={() => setDeletingId(null)}
+                      style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text-secondary)', borderRadius: '8px', padding: '6px 8px', cursor: 'pointer' }}
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => setDeletingId(t.id)}
+                    style={{ 
+                      background: 'none', 
+                      border: 'none', 
+                      color: 'var(--text-secondary)', 
+                      cursor: 'pointer',
+                      padding: '8px',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'var(--transition)'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--danger)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                )}
               </div>
             </div>
           ))}

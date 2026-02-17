@@ -17,14 +17,14 @@ test.describe('Finance Tracker Core Flows', () => {
     
     // Fill in transaction details
     await page.fill('input[placeholder="0.00"]', '50');
-    await page.fill('input[placeholder="Rent, Coffee, Bonus..."]', 'Test Expense');
+    await page.fill('input[placeholder="Where did it go?"]', 'Test Expense');
     
     // Ensure it's an expense (the type toggle button)
     const typeToggle = page.locator('button', { hasText: /^expense$/i }).first();
     await typeToggle.click();
     
     // Click Add (the submit button)
-    await page.click('button:has-text("Add expense")');
+    await page.click('button:has-text("Confirm expense")');
     
     // Verify it appears in the dashboard summary (Total Expenses)
     const expenseCard = page.locator('.glass-card:has-text("Expenses")').first();
@@ -37,8 +37,8 @@ test.describe('Finance Tracker Core Flows', () => {
     await expect(page.locator('text=Test Expense')).toBeVisible();
     
     // Delete the transaction
-    page.on('dialog', dialog => dialog.accept()); // Handle confirmation
     await page.click('button:has(svg[class*="lucide-trash2"])');
+    await page.click('button:has-text("Delete")');
     
     // Verify it's gone
     await expect(page.locator('text=Test Expense')).not.toBeVisible();

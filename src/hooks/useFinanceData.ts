@@ -314,15 +314,29 @@ export function useFinanceData() {
   };
 
   const addRecurring = async (r: Omit<RecurringTransaction, 'id' | 'next_occurrence' | 'is_active'>) => {
+    const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const next_occurrence = r.start_date;
-    const newRecurring = { ...r, next_occurrence, is_active: true, user_id: user?.id };
+    const newRecurring = { ...r, id: tempId, next_occurrence, is_active: true, user_id: user?.id };
     
-    if (!user) {
-      const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      setRecurringTransactions(prev => [{ ...newRecurring, id: tempId } as RecurringTransaction, ...prev]);
-    } else {
-      const { error } = await supabase.from('recurring_transactions').insert([newRecurring]);
-      if (error) alert('Failed to add recurring: ' + error.message);
+    // Optimistic update
+    setRecurringTransactions(prev => [newRecurring as RecurringTransaction, ...prev]);
+
+    if (user) {
+      const { data, error } = await supabase
+        .from('recurring_transactions')
+        .insert([{ ...r, next_occurrence, is_active: true, user_id: user.id }])
+        .select()
+        .single();
+        
+      if (error) {
+        setRecurringTransactions(prev => prev.filter(item => item.id !== tempId));
+        console.error('Error adding recurring:', error);
+        return;
+      }
+      
+      if (data) {
+        setRecurringTransactions(prev => prev.map(item => item.id === tempId ? data as RecurringTransaction : item));
+      }
     }
   };
 
@@ -476,46 +490,134 @@ export function useFinanceData() {
   const stats = calculateStats(transactions, debts);
 
   const updateBudget = async (category: string, amount: number) => {
+    const tempId = `temp_${Date.now()}`;
     const existing = budgets.find(b => b.category === category);
-    
+    const oldBudgets = [...budgets];
+
+    // Optimistic update
+    if (existing) {
+      setBudgets(prev => prev.map(b => b.category === category ? { ...b, amount } : b));
+    } else {
+      setBudgets(prev => [{ id: tempId, category, amount, period: 'monthly', user_id: user?.id }, ...prev]);
+    }
+
     if (user) {
       if (existing) {
-        await supabase.from('budgets').update({ amount }).eq('id', existing.id);
+        const { error } = await supabase.from('budgets').update({ amount }).eq('id', existing.id);
+        if (error) {
+          setBudgets(oldBudgets);
+          console.error('Error updating budget:', error);
+        }
       } else {
-        await supabase.from('budgets').insert([{ category, amount, user_id: user.id, period: 'monthly' }]);
-      }
-    } else {
-      if (existing) {
-        setBudgets(prev => prev.map(b => b.category === category ? { ...b, amount } : b));
-      } else {
-        setBudgets(prev => [...prev, { id: Date.now().toString(), category, amount, period: 'monthly' }]);
+        const { data, error } = await supabase
+          .from('budgets')
+          .insert([{ category, amount, user_id: user.id, period: 'monthly' }])
+          .select()
+          .single();
+          
+        if (error) {
+          setBudgets(oldBudgets);
+          console.error('Error adding budget:', error);
+        } else if (data) {
+          setBudgets(prev => prev.map(b => b.id === tempId ? data as Budget : b));
+        }
       }
     }
   };
 
   const updateSavingsGoal = async (id: string, updates: Partial<SavingsGoal>) => {
-    if (user) {
+    const oldGoals = [...savingsGoals];
+    
+    // Optimistic update
+    setSavingsGoals(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+
+    if (user && !id.startsWith('temp_')) {
       const { error } = await supabase
         .from('savings_goals')
         .update(updates)
         .eq('id', id);
 
-      if (error) console.error('Error updating goal:', error);
-    } else {
-      setSavingsGoals((prev: SavingsGoal[]) => prev.map((s: SavingsGoal) => s.id === id ? { ...s, ...updates } : s));
+      if (error) {
+        setSavingsGoals(oldGoals);
+        console.error('Error updating goal:', error);
+      }
     }
   };
 
   const addSavingsGoal = async (goal: Omit<SavingsGoal, 'id' | 'current_amount'>) => {
-    if (user) {
-      const { error } = await supabase
-        .from('savings_goals')
-        .insert([{ ...goal, user_id: user.id, current_amount: 0 }]);
+    const tempId = `temp_${Date.now()}`;
+    const newGoal = { ...goal, id: tempId, current_amount: 0, user_id: user?.id };
+    
+    // Optimistic update
+    setSavingsGoals(prev => [...prev, newGoal as SavingsGoal]);
 
-      if (error) console.error('Error adding goal:', error);
-    } else {
-      setSavingsGoals((prev: SavingsGoal[]) => [...prev, { ...goal, id: Date.now().toString(), current_amount: 0 } as SavingsGoal]);
+    if (user) {
+      const { data, error } = await supabase
+        .from('savings_goals')
+        .insert([{ ...goal, user_id: user.id, current_amount: 0 }])
+        .select()
+        .single();
+
+      if (error) {
+        setSavingsGoals(prev => prev.filter(g => g.id !== tempId));
+        console.error('Error adding goal:', error);
+      } else if (data) {
+        setSavingsGoals(prev => prev.map(g => g.id === tempId ? data as SavingsGoal : g));
+      }
     }
+  };
+
+  const deleteBudget = async (id: string) => {
+    const deletedBudget = budgets.find(b => b.id === id);
+    setBudgets(prev => prev.filter(b => b.id !== id));
+
+    if (user && !id.startsWith('temp_')) {
+      const { error } = await supabase.from('budgets').delete().eq('id', id);
+      if (error) {
+        if (deletedBudget) setBudgets(prev => [deletedBudget, ...prev]);
+        console.error('Error deleting budget:', error);
+      }
+    }
+  };
+
+  const deleteSavingsGoal = async (id: string) => {
+    const deletedGoal = savingsGoals.find(g => g.id === id);
+    setSavingsGoals(prev => prev.filter(g => g.id !== id));
+
+    if (user && !id.startsWith('temp_')) {
+      const { error } = await supabase.from('savings_goals').delete().eq('id', id);
+      if (error) {
+        if (deletedGoal) setSavingsGoals(prev => [deletedGoal, ...prev]);
+        console.error('Error deleting goal:', error);
+      }
+    }
+  };
+
+  const contributeToGoal = async (id: string, amount: number) => {
+    const goal = savingsGoals.find(g => g.id === id);
+    if (!goal) return;
+    
+    const newAmount = goal.current_amount + amount;
+    const oldGoals = [...savingsGoals];
+    
+    // Optimistic update
+    setSavingsGoals(prev => prev.map(g => g.id === id ? { ...g, current_amount: newAmount } : g));
+
+    if (user && !id.startsWith('temp_')) {
+      const { error } = await supabase.from('savings_goals').update({ current_amount: newAmount }).eq('id', id);
+      if (error) {
+        setSavingsGoals(oldGoals);
+        console.error('Error contributing to goal:', error);
+      }
+    }
+    
+    addTransaction({
+      title: `Contribution to ${goal.title}`,
+      amount: -amount,
+      type: 'expense',
+      category: 'Savings',
+      date: new Date().toISOString().split('T')[0]
+    });
   };
 
   const clearAllData = async () => {
@@ -577,9 +679,12 @@ export function useFinanceData() {
     addRecurring,
     toggleRecurring,
     deleteRecurring,
+    deleteBudget,
     updateBudget,
     addSavingsGoal,
     updateSavingsGoal,
+    deleteSavingsGoal,
+    contributeToGoal,
     stats, 
     user, 
     loading 

@@ -1,18 +1,29 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flag, Plus, Calendar, Target } from 'lucide-react';
+import { Flag, Plus, Calendar, Target, Edit2, Trash2, DollarSign, X } from 'lucide-react';
 import type { SavingsGoal } from '../hooks/useFinanceData';
 
 interface SavingsGoalsProps {
   goals: SavingsGoal[];
   onAddGoal: (goal: Omit<SavingsGoal, 'id' | 'current_amount'>) => void;
+  onUpdateGoal: (id: string, updates: Partial<SavingsGoal>) => void;
+  onDeleteGoal: (id: string) => void;
+  onContribute: (id: string, amount: number) => void;
 }
 
 export const SavingsGoals: React.FC<SavingsGoalsProps> = ({ 
   goals, 
-  onAddGoal 
+  onAddGoal,
+  onUpdateGoal,
+  onDeleteGoal,
+  onContribute
 }) => {
   const [isAdding, setIsAdding] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<SavingsGoal | null>(null);
+  const [contributingId, setContributingId] = useState<string | null>(null);
+  const [contributionAmount, setContributionAmount] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  
   const [newGoal, setNewGoal] = useState({
     title: '',
     target_amount: '',
@@ -32,6 +43,25 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
     });
     setIsAdding(false);
     setNewGoal({ title: '', target_amount: '', deadline: '', color: '#6366f1', icon: 'target' });
+  };
+
+  const handleUpdateGoal = () => {
+    if (!editingGoal || !editingGoal.title) return;
+    onUpdateGoal(editingGoal.id, {
+      title: editingGoal.title,
+      target_amount: editingGoal.target_amount,
+      deadline: editingGoal.deadline,
+      color: editingGoal.color
+    });
+    setEditingGoal(null);
+  };
+
+  const handleContribute = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!contributingId || !contributionAmount) return;
+    onContribute(contributingId, parseFloat(contributionAmount));
+    setContributingId(null);
+    setContributionAmount('');
   };
 
   return (
@@ -61,7 +91,7 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
         </button>
       </div>
 
-      <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+      <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
         {goals.map((goal) => {
           const percent = Math.min((goal.current_amount / goal.target_amount) * 100, 100);
           return (
@@ -79,8 +109,37 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
                     </span>
                   )}
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{percent.toFixed(0)}%</div>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                   <button 
+                    onClick={() => setEditingGoal(goal)}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }}
+                  >
+                    <Edit2 size={14} />
+                  </button>
+                  
+                  {deletingId === goal.id ? (
+                    <div style={{ display: 'flex', gap: '0.2rem' }}>
+                      <button 
+                        onClick={() => { onDeleteGoal(goal.id); setDeletingId(null); }}
+                        style={{ background: 'var(--danger)', border: 'none', color: 'white', borderRadius: '4px', padding: '2px 8px', fontSize: '10px', fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        Confirm
+                      </button>
+                      <button 
+                        onClick={() => setDeletingId(null)}
+                        style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', cursor: 'pointer' }}
+                      >
+                        X
+                      </button>
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={() => setDeletingId(goal.id)}
+                      style={{ background: 'none', border: 'none', color: 'var(--danger)', opacity: 0.5, cursor: 'pointer', padding: '4px' }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -92,10 +151,18 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '1rem' }}>
                 <span style={{ color: 'var(--text-secondary)' }}>${goal.current_amount.toLocaleString()} saved</span>
                 <span style={{ fontWeight: 600 }}>${goal.target_amount.toLocaleString()}</span>
               </div>
+
+              <button 
+                onClick={() => setContributingId(goal.id)}
+                className="btn btn-secondary"
+                style={{ width: '100%', fontSize: '0.8rem', padding: '0.4rem' }}
+              >
+                <DollarSign size={14} /> Add Progress
+              </button>
             </motion.div>
           );
         })}
@@ -109,53 +176,35 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
       </div>
 
       <AnimatePresence>
-        {isAdding && (
+        {(isAdding || editingGoal) && (
           <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(0,0,0,0.6)',
-              backdropFilter: 'blur(4px)',
-              zIndex: 3000,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '1.5rem'
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)',
+              zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
             }}
           >
             <motion.div 
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
+              initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }}
               style={{
-                background: 'var(--bg-color)',
-                border: '1px solid var(--card-border)',
-                borderRadius: '24px',
-                padding: '2rem',
-                width: '100%',
-                maxWidth: '450px',
+                background: 'var(--bg-color)', border: '1px solid var(--card-border)',
+                borderRadius: '24px', padding: '2rem', width: '100%', maxWidth: '450px',
                 boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)'
               }}
             >
               <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Target size={24} color="var(--accent-secondary)" />
-                New Savings Goal
+                {editingGoal ? 'Update Goal' : 'New Savings Goal'}
               </h3>
               
               <div style={{ display: 'grid', gap: '1.25rem' }}>
                 <div className="input-group">
-                  <label>What are you saving for?</label>
+                  <label>Goal Name</label>
                   <input 
-                    type="text" 
-                    className="input-field" 
-                    placeholder="e.g. Dream Vacation, New Car" 
-                    value={newGoal.title}
-                    onChange={(e) => setNewGoal({ ...newGoal, title: e.target.value })}
+                    type="text" className="input-field" placeholder="e.g. Dream Vacation" 
+                    value={editingGoal ? editingGoal.title : newGoal.title}
+                    onChange={(e) => editingGoal ? setEditingGoal({...editingGoal, title: e.target.value}) : setNewGoal({ ...newGoal, title: e.target.value })}
                   />
                 </div>
 
@@ -163,20 +212,17 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
                   <div className="input-group">
                     <label>Target ($)</label>
                     <input 
-                      type="number" 
-                      className="input-field" 
-                      placeholder="5000" 
-                      value={newGoal.target_amount}
-                      onChange={(e) => setNewGoal({ ...newGoal, target_amount: e.target.value })}
+                      type="number" className="input-field" placeholder="5000" 
+                      value={editingGoal ? editingGoal.target_amount : newGoal.target_amount}
+                      onChange={(e) => editingGoal ? setEditingGoal({...editingGoal, target_amount: parseFloat(e.target.value)}) : setNewGoal({ ...newGoal, target_amount: e.target.value })}
                     />
                   </div>
                   <div className="input-group">
-                    <label>Deadline (Optional)</label>
+                    <label>Deadline</label>
                     <input 
-                      type="date" 
-                      className="input-field" 
-                      value={newGoal.deadline}
-                      onChange={(e) => setNewGoal({ ...newGoal, deadline: e.target.value })}
+                      type="date" className="input-field" 
+                      value={editingGoal ? editingGoal.deadline : newGoal.deadline}
+                      onChange={(e) => editingGoal ? setEditingGoal({...editingGoal, deadline: e.target.value}) : setNewGoal({ ...newGoal, deadline: e.target.value })}
                     />
                   </div>
                 </div>
@@ -187,15 +233,11 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
                     {['#6366f1', '#a855f7', '#ec4899', '#22c55e', '#f59e0b', '#ef4444'].map(c => (
                       <button 
                         key={c}
-                        onClick={() => setNewGoal({ ...newGoal, color: c })}
+                        onClick={() => editingGoal ? setEditingGoal({...editingGoal, color: c}) : setNewGoal({ ...newGoal, color: c })}
                         style={{
-                          width: '32px',
-                          height: '32px',
-                          borderRadius: '50%',
-                          background: c,
-                          border: newGoal.color === c ? '3px solid white' : 'none',
-                          cursor: 'pointer',
-                          transition: 'var(--transition)'
+                          width: '32px', height: '32px', borderRadius: '50%', background: c,
+                          border: (editingGoal ? editingGoal.color : newGoal.color) === c ? '3px solid white' : 'none',
+                          cursor: 'pointer', transition: 'var(--transition)'
                         }}
                       />
                     ))}
@@ -204,9 +246,53 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
               </div>
 
               <div style={{ display: 'flex', gap: '1rem', marginTop: '2.5rem' }}>
-                <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setIsAdding(false)}>Cancel</button>
-                <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleAddGoal}>Create Goal</button>
+                <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => { setIsAdding(false); setEditingGoal(null); }}>Cancel</button>
+                <button className="btn btn-primary" style={{ flex: 1 }} onClick={editingGoal ? handleUpdateGoal : handleAddGoal}>
+                  {editingGoal ? 'Save Changes' : 'Create Goal'}
+                </button>
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {contributingId && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)',
+              zIndex: 4000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
+            }}
+          >
+             <motion.div 
+              initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }}
+              style={{
+                background: 'var(--bg-color)', border: '1px solid var(--card-border)',
+                borderRadius: '24px', padding: '2rem', width: '100%', maxWidth: '350px',
+                boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Add Progress</h3>
+                <button onClick={() => setContributingId(null)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              <form onSubmit={handleContribute}>
+                 <div className="input-group">
+                  <label>Amount to contribute ($)</label>
+                  <input 
+                    type="number" className="input-field" placeholder="100.00" autoFocus
+                    value={contributionAmount}
+                    onChange={(e) => setContributionAmount(e.target.value)}
+                    required
+                  />
+                </div>
+                <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem' }}>
+                  Confirm Contribution
+                </button>
+              </form>
             </motion.div>
           </motion.div>
         )}

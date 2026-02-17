@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, AlertTriangle, Edit2 } from 'lucide-react';
+import { Target, AlertTriangle, Edit2, Trash2 } from 'lucide-react';
 import type { Transaction, Budget } from '../hooks/useFinanceData';
 import { calculateCategorySpending } from '../utils/financeCalculations';
 
@@ -8,12 +8,14 @@ interface CategoryBudgetsProps {
   transactions: Transaction[];
   budgets: Budget[];
   onUpdateBudget: (category: string, amount: number) => void;
+  onDeleteBudget: (id: string) => void;
 }
 
 export const CategoryBudgets: React.FC<CategoryBudgetsProps> = ({ 
   transactions, 
   budgets, 
-  onUpdateBudget 
+  onUpdateBudget,
+  onDeleteBudget 
 }) => {
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -29,6 +31,8 @@ export const CategoryBudgets: React.FC<CategoryBudgetsProps> = ({
     const percent = b.amount > 0 ? (spent / b.amount) * 100 : 0;
     return { ...b, spent, percent };
   }).sort((a, b) => b.percent - a.percent);
+
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleStartEdit = (b: Budget) => {
     setEditingCategory(b.category);
@@ -84,6 +88,30 @@ export const CategoryBudgets: React.FC<CategoryBudgetsProps> = ({
                 >
                   <Edit2 size={14} />
                 </button>
+                
+                {deletingId === b.id ? (
+                  <div style={{ display: 'flex', gap: '0.2rem' }}>
+                    <button 
+                      onClick={() => { onDeleteBudget(b.id); setDeletingId(null); }}
+                      style={{ background: 'var(--danger)', border: 'none', color: 'white', borderRadius: '4px', padding: '2px 8px', fontSize: '10px', fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      Confirm
+                    </button>
+                    <button 
+                      onClick={() => setDeletingId(null)}
+                      style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', cursor: 'pointer' }}
+                    >
+                      X
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => setDeletingId(b.id)}
+                    style={{ background: 'none', border: 'none', color: 'var(--danger)', opacity: 0.5, cursor: 'pointer', padding: '4px' }}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
               </div>
             </div>
 
@@ -168,6 +196,8 @@ export const CategoryBudgets: React.FC<CategoryBudgetsProps> = ({
                     <option value="Entertainment">Entertainment</option>
                     <option value="Health">Health</option>
                     <option value="Housing">Housing</option>
+                    <option value="Subscription">Subscription</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
               )}

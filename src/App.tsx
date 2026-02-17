@@ -44,7 +44,11 @@ function App() {
     deleteTransaction,
     clearAllData,
     updateBudget,
+    deleteBudget,
     addSavingsGoal,
+    updateSavingsGoal,
+    deleteSavingsGoal,
+    contributeToGoal,
     stats, 
     user, 
     loading 
@@ -109,10 +113,14 @@ function App() {
               transactions={transactions}
               budgets={budgets}
               onUpdateBudget={updateBudget}
+              onDeleteBudget={deleteBudget}
             />
             <SavingsGoals 
               goals={savingsGoals}
               onAddGoal={addSavingsGoal}
+              onUpdateGoal={updateSavingsGoal}
+              onDeleteGoal={deleteSavingsGoal}
+              onContribute={contributeToGoal}
             />
           </div>
         )
